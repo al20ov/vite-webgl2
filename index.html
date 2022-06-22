@@ -18,21 +18,37 @@
 
     out vec2 vUV;
     void main() {
-      vUV = position.xy + 0.5;
+      vUV = position.xy * 0.5 + 0.5;
       gl_Position = position;
     }
   </script>
-  <script type="shader/fragment" id="fragment-shader">
+  <script type="shader/fragment" id="fragment-shader-mrt">
+    #version 300 es
+    precision highp float;
+
+    layout(location=0) out vec4 fragColor1;
+    layout(location=1) out vec4 fragColor2;
+
+    void main() {
+      fragColor1 = vec4(1.0, 0.0, 0.0, 1.0);
+      fragColor2 = vec4(0.0, 0.0, 1.0, 1.0);
+    }
+  </script>
+  <script type="shader/fragment" id="fragment-shader-blend">
     #version 300 es
     precision highp float;
 
     in vec2 vUV;
-    uniform sampler2D tex;
+
+    uniform sampler2D texture1;
+    uniform sampler2D texture2;
 
     out vec4 fragColor;
-
     void main() {
-      fragColor = texture(tex, vUV);
+      vec4 color1 = texture(texture1, vUV);
+      vec4 color2 = texture(texture2, vUV);
+
+      fragColor = mix(color1, color2, vUV.x);
     }
   </script>
   <script type="module" src="/main.js"></script>

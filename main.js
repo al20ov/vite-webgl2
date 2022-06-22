@@ -11,33 +11,52 @@ const app = PicoGL.createApp(canvas)
   .clearColor(0, 0, 0, 1);
 
 const vSource = document.getElementById("vertex-shader").text.trim();
-const fSource = document.getElementById("fragment-shader").text.trim();
+const vertexShader = app.createShader(PicoGL.VERTEX_SHADER, vSource);
 
-const program = app.createProgram(vSource, fSource);
+const fSourceMRT = document.getElementById("fragment-shader-mrt").text.trim();
+const programMRT = app.createProgram(vertexShader, fSourceMRT);
+
+const fSourceBlend = document.getElementById("fragment-shader-blend").text
+  .trim();
+const programBlend = app.createProgram(vertexShader, fSourceBlend);
 
 // deno-fmt-ignore
-const positions = app.createVertexBuffer(PicoGL.FLOAT, 2, new Float32Array([
+const trianglePositions = app.createVertexBuffer(PicoGL.FLOAT, 2, new Float32Array([
   -0.5, -0.5,
   0.5, -0.5,
-  -0.5, 0.5,
-  -0.5, 0.5,
-  0.5, -0.5,
-  0.5, 0.5
+  0.0, 0.5
 ]));
 
 const triangleArray = app.createVertexArray()
-  .vertexAttributeBuffer(0, positions);
+  .vertexAttributeBuffer(0, trianglePositions);
 
-let image = new Image();
+// deno-fmt-ignore
+const quadPositions = app.createVertexBuffer(PicoGL.FLOAT, 2, new Float32Array([
+  -1.0, 1.0,
+  -1.0, -1.0,
+  1.0, -1.0,
+  -1.0, 1.0,
+  1.0, -1.0,
+  1.0, 1.0
+]));
 
-image.onload = () => {
-  const texture = app.createTexture2D(image, { flipY: true });
-  const drawCall = app.createDrawCall(program, triangleArray)
-    .texture("tex", texture);
+const quadArray = app.createVertexArray()
+  .vertexAttributeBuffer(0, quadPositions);
 
-  app.clear();
+const colorTarget1 = app.createTexture2D(app.width, app.height);
+const colorTarget2 = app.createTexture2D(app.width, app.height);
 
-  drawCall.draw();
-};
+const framebuffer = app.createFramebuffer()
+  .colorTarget(0, colorTarget1)
+  .colorTarget(1, colorTarget2);
 
-image.src = "webgl-logo.png";
+const drawCallMRT = app.createDrawCall(programMRT, triangleArray);
+const drawCallBlend = app.createDrawCall(programBlend, quadArray)
+  .texture("texture1", framebuffer.colorAttachments[0])
+  .texture("texture2", framebuffer.colorAttachments[1]);
+
+app.drawFramebuffer(framebuffer).clear();
+drawCallMRT.draw();
+
+app.defaultDrawFramebuffer().clear();
+drawCallBlend.draw();
