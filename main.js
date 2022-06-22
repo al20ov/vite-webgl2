@@ -1,7 +1,11 @@
 import "./style.css";
+import { load } from "@loaders.gl/core";
+import { OBJLoader } from "@loaders.gl/obj";
 import PicoGL from "picogl";
 
-import { mat4 } from "gl-matrix";
+const obj = await load("assets/models/weirdplane.obj", OBJLoader);
+
+console.log([...obj.attributes.POSITION.value]);
 
 const canvas = document.getElementById("canvas");
 canvas.width = 1600;
@@ -18,29 +22,21 @@ const fSource = document.getElementById("fragment-shader").text.trim();
 const program = app.createProgram(vSource, fSource);
 
 // deno-fmt-ignore
-const positions = app.createVertexBuffer(PicoGL.FLOAT, 2, new Float32Array([
-  -0.2, -0.2,
-  0.2, -0.2,
-  0.0, 0.2
-]));
+const positions = app.createVertexBuffer(PicoGL.FLOAT, 3, obj.attributes.POSITION.value);
 
 const triangleArray = app.createVertexArray()
   .vertexAttributeBuffer(0, positions);
 
-const rotationMatrix = mat4.create();
-mat4.fromZRotation(rotationMatrix, Math.PI / 12);
-const uniformColor = new Float32Array([1.0, 0.5, 1.0, 1.0]);
+let image = new Image();
 
-const uniformBuffer = app.createUniformBuffer([
-  PicoGL.FLOAT_MAT4,
-  PicoGL.FLOAT_VEC4,
-])
-  .set(0, rotationMatrix)
-  .set(1, uniformColor)
-  .update();
+image.onload = () => {
+  const texture = app.createTexture2D(image, { flipY: true });
+  const drawCall = app.createDrawCall(program, triangleArray)
+    .texture("tex", texture);
 
-const drawCall = app.createDrawCall(program, triangleArray)
-  .uniformBlock("SceneUniforms", uniformBuffer);
+  app.clear();
 
-app.clear();
-drawCall.draw();
+  drawCall.draw();
+};
+
+image.src = "assets/textures/webgl-logo.png";

@@ -14,29 +14,27 @@
   <script type="shader/vertex" id="vertex-shader">
     #version 300 es
 
+    #define SCALE 2.0
+
     layout(location=0) in vec4 position;
 
-    layout(std140) uniform SceneUniforms {
-      mat4 uRotation;
-      vec4 uColor;
-    };
-
+    out vec2 vUV;
     void main() {
-      gl_Position = uRotation * position;
+      vUV = position.xy + 0.5;
+      gl_Position = vec4(position.x / 16.0 * SCALE , position.y / 9.0 * SCALE, 0.0, 1.0);
     }
   </script>
   <script type="shader/fragment" id="fragment-shader">
     #version 300 es
     precision highp float;
 
-    layout(std140) uniform SceneUniforms {
-      mat4 uRotation;
-      vec4 uColor;
-    };
+    in vec2 vUV;
+    uniform sampler2D tex;
 
     out vec4 fragColor;
+
     void main() {
-      fragColor = uColor;
+      fragColor = texture(tex, vUV);
     }
   </script>
   <script type="module" src="/main.js"></script>
