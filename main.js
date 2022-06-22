@@ -2,6 +2,7 @@ import "./style.css";
 import { load } from "@loaders.gl/core";
 import { OBJLoader } from "@loaders.gl/obj";
 import PicoGL from "picogl";
+import { mat4 } from "gl-matrix";
 
 const obj = await load("assets/models/weirdplane.obj", OBJLoader);
 
@@ -29,14 +30,26 @@ const triangleArray = app.createVertexArray()
 
 let image = new Image();
 
-image.onload = () => {
+let angle = 0;
+
+function draw() {
   const texture = app.createTexture2D(image, { flipY: true });
+  let rotation = mat4.create();
+  mat4.fromZRotation(rotation, angle);
   const drawCall = app.createDrawCall(program, triangleArray)
+    .uniform("rotation", rotation)
     .texture("tex", texture);
 
   app.clear();
 
   drawCall.draw();
+
+  angle += 0.02;
+  setTimeout(draw, 16);
+}
+
+image.onload = () => {
+  draw();
 };
 
 image.src = "assets/textures/webgl-logo.png";
