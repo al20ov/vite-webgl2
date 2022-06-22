@@ -19,22 +19,25 @@ const program = app.createProgram(vSource, fSource);
 const positions = app.createVertexBuffer(PicoGL.FLOAT, 2, new Float32Array([
   -0.5, -0.5,
   0.5, -0.5,
-  0.0, 0.5
-]));
-
-// deno-fmt-ignore
-const colors = app.createVertexBuffer(PicoGL.FLOAT, 3, new Float32Array([
-  1.0, 0.0, 0.0,
-  0.0, 1.0, 0.0,
-  0.0, 0.0, 1.0
+  -0.5, 0.5,
+  -0.5, 0.5,
+  0.5, -0.5,
+  0.5, 0.5
 ]));
 
 const triangleArray = app.createVertexArray()
-  .vertexAttributeBuffer(0, positions)
-  .vertexAttributeBuffer(1, colors);
+  .vertexAttributeBuffer(0, positions);
 
-const drawCall = app.createDrawCall(program, triangleArray);
+let image = new Image();
 
-app.clear();
+image.onload = () => {
+  const texture = app.createTexture2D(image, { flipY: true });
+  const drawCall = app.createDrawCall(program, triangleArray)
+    .texture("tex", texture);
 
-drawCall.draw();
+  app.clear();
+
+  drawCall.draw();
+};
+
+image.src = "webgl-logo.png";
