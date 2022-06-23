@@ -14,16 +14,22 @@
   <script type="shader/vertex" id="vertex-shader">
     #version 300 es
 
-    layout(location=0) in vec4 position;
+    layout(location=0) in vec3 position;
+    layout(location=1) in vec3 normal;
 
     uniform mat4 model;
     uniform mat4 view;
     uniform mat4 projection;
 
     out vec2 vUV;
+    out vec3 vNormal;
+    out vec3 fragPos;
+
     void main() {
       vUV = position.xy + 0.5;
-      gl_Position = projection * view * model * position;
+      vNormal = normal;
+      fragPos = vec3(model * vec4(position, 1.0));
+      gl_Position = projection * view * model * vec4(position, 1.0);
     }
   </script>
   <script type="shader/fragment" id="fragment-shader">
@@ -31,13 +37,34 @@
     precision highp float;
 
     in vec2 vUV;
+    in vec3 vNormal;
+    in vec3 fragPos;
+
     uniform sampler2D tex;
 
     out vec4 fragColor;
 
     void main() {
-      fragColor = texture(tex, vUV);
+      vec3 lightColor = vec3(1.0, 1.0, 1.0);
+      vec3 objectColor = vec3(1.0, 0.5, 0.5);
+
+      vec3 lightPos = vec3(10.0, 10.0, 0.0);
+
+      vec3 norm = normalize(vNormal);
+      vec3 lightDir = normalize(lightPos - fragPos);
+
+      float diff = max(dot(norm, lightDir), 0.0);
+
+      vec3 diffuse = diff * lightColor;
+
+      float ambientStrength = 0.1;
+      vec3 ambient = ambientStrength * lightColor;
+      vec3 result = (ambient + diffuse) * objectColor;
+      fragColor = vec4(result, 1.0);
     }
+
+      //fragColor = mix(texture(tex, vUV), vec4(vNormal, 1.0));
+      //fragColor = vec4(vNormal.xyz, 1.0);
   </script>
   <script type="module" src="/main.js"></script>
 </body>
