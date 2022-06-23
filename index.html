@@ -14,24 +14,16 @@
   <script type="shader/vertex" id="vertex-shader">
     #version 300 es
 
-    #define SCALE 0.2
-
-    #define RATIO 16.0 / 9.0
-
     layout(location=0) in vec4 position;
 
-    uniform mat4 rotation;
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
 
     out vec2 vUV;
     void main() {
       vUV = position.xy + 0.5;
-      vec4 rotatedPosition = position * rotation;
-      gl_Position = vec4(
-        rotatedPosition.x * SCALE,
-        rotatedPosition.y * RATIO * SCALE,
-        rotatedPosition.z,
-        1.0
-      );
+      gl_Position = projection * view * model * position;
     }
   </script>
   <script type="shader/fragment" id="fragment-shader">
