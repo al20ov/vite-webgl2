@@ -39,14 +39,14 @@ function getMVP() {
   const model = mat4.create();
   // mat4.fromZRotation(model, angle);
   mat4.fromScaling(model, [1.0, 1.0, 1.0])
-  // mat4.rotateY(model, model, angle);
-  // mat4.rotateX(model, model, angle);
-  angle += 0.04;
+  mat4.rotateY(model, model, angle);
+  mat4.rotateX(model, model, angle);
+  angle += 0.02;
 
   const view = mat4.create();
-  mat4.translate(view, view, [0, 0, -1.5]);
+  mat4.translate(view, view, [0, 0, -2.5]);
   // mat4.rotateX(view, view, angle / 2.0);
-  mat4.rotateY(view, view, angle / 2.0);
+  // mat4.rotateY(view, view, angle);
 
   const projection = mat4.create();
   mat4.perspective(projection, 90 * (Math.PI / 180), 16.0 / 9.0, 0.01, 100);
